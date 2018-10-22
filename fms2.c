@@ -73,38 +73,32 @@ int main() {
 		while (ch != NULL) {
 			if (*ch != '\n' && i == 0) {
 				strcpy(point_1[j], ch);
-				printf("Point_1[%d] -> %s ", j, point_1[j]);
+				//printf("Point_1[%d] -> %s ", j, point_1[j]);
 				j = j + 2;
 			}
 
 			else if (*ch != '\n' && i == 1) {
 				strcpy(point_2[j], ch);
-				printf("Point_2[%d] -> %s ", j, point_2[j]);
+				//printf("Point_2[%d] -> %s ", j, point_2[j]);
 				j = j + 2;
 			}
 
 			else if (*ch != '\n' && i > 1) {
 				strcpy(point_1[j], point_2[j]);
 				strcpy(point_2[j], ch);
-
-				printf("Point_%d[%d] -> %s ",i+1, j, point_2[j]);
+				//printf("Point_%d[%d] -> %s ",i+1, j, point_2[j]);
 				j = j + 2;
 			}
 
 			else {
 				i++;
-				printf("\n");
+				//printf("\n");
 			}
 			ch = strtok(NULL, " 'mkº/h");
 		}
 
 		if (i == 2) {
-			for (int i = 0; i < NB_DATA; i = i + 2) {
-				printf("%s, %s ", point_1[i], point_2[i]);
-				printf("\n");
-			}
 			route_distance = dist_btw_2points(point_1, point_2);
-			return 0;
 		}
 
 		else if (i > 2) {
