@@ -13,9 +13,13 @@
 #define DEG_TO_RAD PI/180
 #define ALPHA 1
 
-double height_derivative(double present_height, double final_height) {
-	derivative = ALPHA * final_height - ALPHA * present_height;
-	return derivative;
+double calculate_height_derivative(double present_height, double final_height) {
+	height_derivative = ALPHA * final_height - ALPHA * present_height;
+	return height_derivative;
+}
+
+double calculate_true_heading(double, double) {
+
 }
 
 double dist_btw_2points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_SIZE]) { //função para calcular distância entre 2 pontos consecutivos
