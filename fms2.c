@@ -13,16 +13,7 @@
 #define DEG_TO_RAD PI/180
 #define ALPHA 1
 
-double calculate_height_derivative(double present_height, double final_height) {
-	height_derivative = ALPHA * final_height - ALPHA * present_height;
-	return height_derivative;
-}
-
-double calculate_true_heading(double, double) {
-
-}
-
-double dist_btw_2points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_SIZE]) { //função para calcular distância entre 2 pontos consecutivos
+void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_SIZE], double **info) { //função para calcular distância entre 2 pontos consecutivos
 
 	for (int i = 0; i < NB_DATA; i = i + 2) {
 		printf("%s, %s ", point_1[i], point_2[i]);
@@ -53,22 +44,48 @@ double dist_btw_2points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][E
 	if (strcmp(point_2[14], "E") == 0) {
 		lambda_2 = -lambda_2;
 	}
-	printf("LAMBDA_2 %f\n", lambda_2);
-	distance = acos(sin(phi_1*DEG_TO_RAD)*sin(phi_2*DEG_TO_RAD) + cos(phi_1*DEG_TO_RAD)*cos(phi_2*DEG_TO_RAD)*cos(lambda_2*DEG_TO_RAD - lambda_1 * DEG_TO_RAD)) * (altitude + EARTH_RADIUS);  // great-circle 
-																														  // distance
-	// https://en.wikipedia.org/wiki/Great-circle_distance
 
+	printf("LAMBDA_2 %f\n", lambda_2);
+	(*info)[0] = phi_1;
+	(*info)[1] = lambda_1;
+	(*info)[2] = phi_2;
+	(*info)[3] = lambda_2;
+	(*info)[4] = altitude;
+
+	return;
+}
+
+double dist_btw_2points(double info[4]) { //função para calcular distância entre 2 pontos consecutivos
+	double distance;
+	distance = acos(sin(info[0]*DEG_TO_RAD)*sin(info[2]*DEG_TO_RAD) + cos(info[0]*DEG_TO_RAD)*cos(info[2]*DEG_TO_RAD)*cos(info[3]*DEG_TO_RAD - info[1] * DEG_TO_RAD)) * (info[4] + EARTH_RADIUS);  // great-circle 
+																													  // distance
+	// https://en.wikipedia.org/wiki/Great-circle_distance
+	
 	return distance;
+}
+
+double calculate_height_dev(double present_height, double final_height) {
+	double height_dev = ALPHA * final_height - ALPHA * present_height;
+	return height_dev;
+}
+
+double calculate_true_heading(double info[4]) {
+	double y = sin(info[3] - info[1])*cos(info[2]);
+	double x = (cos(info[0])*sin(info[2])) - (sin(info[0])*cos(info[2])*cos(info[3] - info[1]));
+	double heading = atan2(y, x);
+	return heading;
 }
 
 int main() {
 
 	FILE *file;
 	double route_distance = 0;
+	double *info;
 	char *ch, line[DIM], point_1[NB_DATA][ELE_SIZE], point_2[NB_DATA][ELE_SIZE];
 	int i = 0, j = 0;
 
 	file = fopen("waypoints.txt", "r"); // abrir ficheiro
+	info = calloc(4, sizeof(double));
 
 	if (file == NULL) {     // check if file was correctly opened
 		printf("Error opening file");
@@ -108,11 +125,13 @@ int main() {
 		}
 
 		if (i == 2) {
-			route_distance = dist_btw_2points(point_1, point_2);
+			process_points(point_1, point_2, &info);
+			route_distance = dist_btw_2points(info);
 		}
 
 		else if (i > 2) {
-			route_distance = route_distance + dist_btw_2points(point_1, point_2);
+			process_points(point_1, point_2, &info);
+			route_distance = route_distance + dist_btw_2points(info);
 		}
 	}
 
