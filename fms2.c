@@ -19,38 +19,36 @@ void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_S
 		printf("%s, %s ", point_1[i], point_2[i]);
 		printf("\n");
 	}
-	double distance = 0;
-	double phi_1 = atof(point_1[0]) + atof(point_1[2]) / 60 + atof(point_1[4]) / 3600;  //conversão de Degrees-Minutes-Seconds para graus
 
+	double phi_1 = atof(point_1[0]) + atof(point_1[2]) / 60 + atof(point_1[4]) / 3600;  //conversão de Degrees-Minutes-Seconds para graus
 	if (strcmp(point_1[6], "S") == 0) {   //Latitude -> para Sul o ângulo varia entre 0 e -90
 		phi_1 = -phi_1;
 	}
 	printf("PHI_1 %f\n", phi_1);
-	double lambda_1 = atof(point_1[8]) + atof(point_1[10]) / 60 + atof(point_1[12]) / 3600;
 
+	double lambda_1 = atof(point_1[8]) + atof(point_1[10]) / 60 + atof(point_1[12]) / 3600;
 	if (strcmp(point_1[14], "E") == 0) {  //Longitude -> para Este o ângulo varia entre 0 e -180
 		lambda_1 = -lambda_1;
 	}
 	printf("LAMBDA_1 %f\n", lambda_1);
-	double altitude = atof(point_1[16]); // A altitude a tomar em conta é a do 1º ponto do segmento
-	double phi_2 = atof(point_2[0]) + atof(point_2[2]) / 60 + atof(point_2[4]) / 3600;
 
+	double phi_2 = atof(point_2[0]) + atof(point_2[2]) / 60 + atof(point_2[4]) / 3600;
 	if (strcmp(point_2[6], "S") == 0) {
 		phi_2 = -phi_2;
 	}
 	printf("PHI_2 %f\n", phi_2);
+	
 	double lambda_2 = atof(point_2[8]) + atof(point_2[10]) / 60 + atof(point_2[12]) / 3600;
-
 	if (strcmp(point_2[14], "E") == 0) {
 		lambda_2 = -lambda_2;
 	}
-
 	printf("LAMBDA_2 %f\n", lambda_2);
+
 	(*info)[0] = phi_1;
 	(*info)[1] = lambda_1;
 	(*info)[2] = phi_2;
 	(*info)[3] = lambda_2;
-	(*info)[4] = altitude;
+	(*info)[4] = atof(point_1[16]); // A altitude a tomar em conta é a do 1º ponto do segmento
 
 	return;
 }
@@ -70,9 +68,10 @@ double calculate_height_dev(double present_height, double final_height) {
 }
 
 double calculate_true_heading(double info[4]) {
-	double y = sin(info[3] - info[1])*cos(info[2]);
-	double x = (cos(info[0])*sin(info[2])) - (sin(info[0])*cos(info[2])*cos(info[3] - info[1]));
-	double heading = atan2(y, x);
+	double y = sin((info[3]*DEG_TO_RAD) - (info[1]*DEG_TO_RAD))*cos(info[2]* DEG_TO_RAD);
+	double x = (cos(info[0]*DEG_TO_RAD)*sin(info[2])*DEG_TO_RAD) - (sin(info[0]* DEG_TO_RAD)*cos(info[2]*DEG_TO_RAD)*cos((info[3]*DEG_TO_RAD) - (info[1]*DEG_TO_RAD)));
+	double heading = atan2(x, y)* (1/DEG_TO_RAD);
+	printf("heading: %f\n", heading);
 	return heading;
 }
 
@@ -127,6 +126,8 @@ int main() {
 		if (i == 2) {
 			process_points(point_1, point_2, &info);
 			route_distance = dist_btw_2points(info);
+			calculate_true_heading(info);
+			return 0;
 		}
 
 		else if (i > 2) {
