@@ -133,19 +133,14 @@ int main() {
 			ch = strtok(NULL, " 'mkº/h");
 		}
 
-		process_points(point_1, point_2, &info);
-		if (i == 2) {	
+		if (i >= 2) {
+			process_points(point_1, point_2, &info);
 			route_distance = dist_btw_2points(info);
-			total_route_distance = route_distance;
+			total_route_distance = total_route_distance + route_distance;
+			seconds_prev = time(NULL);
+			time_between_points = route_distance / (info[5]);
+			calculate_true_heading(info);
 		}
-		else if (i > 2) {
-			route_distance = dist_btw_2points(info);
-			total_route_distance = total_route_distance + dist_btw_2points(info);
-		}
-
-		seconds_prev = time(NULL);
-		time_between_points = route_distance / (info[5]);
-		calculate_true_heading(info);
 		
 	}
 
