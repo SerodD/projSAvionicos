@@ -50,7 +50,8 @@ void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_S
 	(*info)[2] = phi_2;
 	(*info)[3] = lambda_2;
 	(*info)[4] = atof(point_1[16]); // A altitude a tomar em conta é a do 1º ponto do segmento
-	(*info)[5] = atof(point_1[18]); // velocidade
+	(*info)[5] = atof(point_2[16]); // Altitude do ponto final
+	(*info)[6] = atof(point_1[18]); // velocidade
 
 
 	return;
@@ -86,14 +87,13 @@ void calculate_velocity_N_E(double **velocity_N_E, double V_TAS, double Theta_Pa
 int main() {
 
 	FILE *file;
-	double route_distance = 0, time_between_points = 0, total_route_distance = 0;
+	double route_distance = 0, time_between_points = 0, total_route_distance = 0, height_dev = 0, height = 0;
 	double *info, *velocity_N_E;
 	char *ch, line[DIM], point_1[NB_DATA][ELE_SIZE], point_2[NB_DATA][ELE_SIZE];
 	int i = 0, j = 0;
-	time_t seconds_prev;
-	time_t seconds_act;
+	time_t seconds_prev, seconds_init, seconds_act;
 	file = fopen("waypoints.txt", "r"); // abrir ficheiro
-	info = calloc(5, sizeof(double));
+	info = calloc(6, sizeof(double));
 	velocity_N_E = calloc(2, sizeof(double));
 
 	if (file == NULL) {     // check if file was correctly opened
@@ -134,12 +134,28 @@ int main() {
 		}
 
 		if (i >= 2) {
+			// antes de processar o caminho (ponto inicial)
 			process_points(point_1, point_2, &info);
 			route_distance = dist_btw_2points(info);
 			total_route_distance = total_route_distance + route_distance;
-			seconds_prev = time(NULL);
-			time_between_points = route_distance / (info[5]);
+			seconds_init = time(NULL);
+			seconds_prev = seconds_init;
+			time_between_points = route_distance/(info[6]);
 			calculate_true_heading(info);
+			height = info[4];   
+			
+
+			// processar caminho (isto agora vai estar meio preso aqui, porque o tempo não está muito acelerado)
+
+			while(time_between_points <= ((double)seconds_init - (double)seconds_act)*60) {
+				seconds_act = time(NULL);
+				if (((double)seconds_prev - (double)seconds_act)*60 >= 60) {
+					height_dev = calculate_height_dev(height, info[5]);
+					height = height + height_dev;
+					calculate_true_heading(info);
+					seconds_prev = seconds_act;
+				}
+			}
 		}
 		
 	}
