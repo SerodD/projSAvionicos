@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 
 #define DIM 100
 #define NB_DATA 19
@@ -49,6 +50,8 @@ void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_S
 	(*info)[2] = phi_2;
 	(*info)[3] = lambda_2;
 	(*info)[4] = atof(point_1[16]); // A altitude a tomar em conta é a do 1º ponto do segmento
+	(*info)[5] = atof(point_1[18]); // velocidade
+
 
 	return;
 }
@@ -78,13 +81,14 @@ double calculate_true_heading(double info[4]) {
 int main() {
 
 	FILE *file;
-	double route_distance = 0;
+	double route_distance = 0, time_between_points = 0;
 	double *info;
 	char *ch, line[DIM], point_1[NB_DATA][ELE_SIZE], point_2[NB_DATA][ELE_SIZE];
 	int i = 0, j = 0;
-
+	time_t seconds_prev;
+	time_t seconds_act;
 	file = fopen("waypoints.txt", "r"); // abrir ficheiro
-	info = calloc(4, sizeof(double));
+	info = calloc(5, sizeof(double));
 
 	if (file == NULL) {     // check if file was correctly opened
 		printf("Error opening file");
@@ -126,6 +130,9 @@ int main() {
 		if (i == 2) {
 			process_points(point_1, point_2, &info);
 			route_distance = dist_btw_2points(info);
+			time_between_points = route_distance/(info[5]);
+			seconds_prev = time(NULL);
+			printf("%f   %f \n", time_between_points, (double)seconds_prev);
 			calculate_true_heading(info);
 		}
 
