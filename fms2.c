@@ -7,8 +7,8 @@
 #include <time.h>
 
 #define DIM 100
-#define NB_DATA 19
-#define ELE_SIZE 3
+#define NB_DATA 9
+#define ELE_SIZE 10
 #define EARTH_RADIUS 6371000
 #define PI 3.14159265359
 #define DEG_TO_RAD PI/180
@@ -16,31 +16,31 @@
 
 void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_SIZE], double **info) { //função para calcular distância entre 2 pontos consecutivos
 
-	for (int i = 0; i < NB_DATA; i = i + 2) {
+	for (int i = 0; i < NB_DATA; i = i + 1) {
 		printf("%s, %s ", point_1[i], point_2[i]);
 		printf("\n");
 	}
 
-	double phi_1 = atof(point_1[0]) + atof(point_1[2]) / 60 + atof(point_1[4]) / 3600;  //conversão de Degrees-Minutes-Seconds para graus
-	if (strcmp(point_1[6], "S") == 0) {   //Latitude -> para Sul o ângulo varia entre 0 e -90
+	double phi_1 = atof(point_1[0]) + atof(point_1[1]) / 60 + atof(point_1[2]) / 3600;  //conversão de Degrees-Minutes-Seconds para graus
+	if (strcmp(point_1[3], "S") == 0) {   //Latitude -> para Sul o ângulo varia entre 0 e -90
 		phi_1 = -phi_1;
 	}
 	printf("PHI_1 %f\n", phi_1);
 
-	double lambda_1 = atof(point_1[8]) + atof(point_1[10]) / 60 + atof(point_1[12]) / 3600;
-	if (strcmp(point_1[14], "E") == 0) {  //Longitude -> para Este o ângulo varia entre 0 e -180
+	double lambda_1 = atof(point_1[4]) + atof(point_1[5]) / 60 + atof(point_1[6]) / 3600;
+	if (strcmp(point_1[7], "E") == 0) {  //Longitude -> para Este o ângulo varia entre 0 e -180
 		lambda_1 = -lambda_1;
 	}
 	printf("LAMBDA_1 %f\n", lambda_1);
 
-	double phi_2 = atof(point_2[0]) + atof(point_2[2]) / 60 + atof(point_2[4]) / 3600;
-	if (strcmp(point_2[6], "S") == 0) {
+	double phi_2 = atof(point_2[0]) + atof(point_2[1]) / 60 + atof(point_2[2]) / 3600;
+	if (strcmp(point_2[3], "S") == 0) {
 		phi_2 = -phi_2;
 	}
 	printf("PHI_2 %f\n", phi_2);
 	
-	double lambda_2 = atof(point_2[8]) + atof(point_2[10]) / 60 + atof(point_2[12]) / 3600;
-	if (strcmp(point_2[14], "E") == 0) {
+	double lambda_2 = atof(point_2[4]) + atof(point_2[5]) / 60 + atof(point_2[6]) / 3600;
+	if (strcmp(point_2[7], "E") == 0) {
 		lambda_2 = -lambda_2;
 	}
 	printf("LAMBDA_2 %f\n", lambda_2);
@@ -49,9 +49,9 @@ void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_S
 	(*info)[1] = lambda_1;
 	(*info)[2] = phi_2;
 	(*info)[3] = lambda_2;
-	(*info)[4] = atof(point_1[16]); // A altitude a tomar em conta é a do 1º ponto do segmento
-	(*info)[5] = atof(point_2[16]); // Altitude do ponto final
-	(*info)[6] = atof(point_1[18]); // velocidade
+	(*info)[4] = atof(point_1[8]); // A altitude a tomar em conta é a do 1º ponto do segmento
+	(*info)[5] = atof(point_2[8]); // Altitude do ponto final
+	(*info)[6] = atof(point_1[9]); // velocidade
 
 
 	return;
@@ -107,28 +107,30 @@ int main() {
 											 // strtok elimina os caracteres indicados da string. fiz isso para depois meter tudo num vector 
 											 //(neste caso, point_1 e point_2)                           
 		while (ch != NULL) {
+            printf("CH -> %s\n", ch);
 			if (*ch != '\n' && i == 0) {
 				strcpy(point_1[j], ch);
-				//printf("Point_1[%d] -> %s ", j, point_1[j]);
-				j = j + 2;
+				printf("Point_1[%d] -> %s\n", j, point_1[j]);
+				j = j + 1;
 			}
 
 			else if (*ch != '\n' && i == 1) {
 				strcpy(point_2[j], ch);
-				//printf("Point_2[%d] -> %s ", j, point_2[j]);
-				j = j + 2;
+				printf("Point_2[%d] -> %s\n", j, point_2[j]);
+				j = j + 1;
 			}
 
 			else if (*ch != '\n' && i > 1) {
 				strcpy(point_1[j], point_2[j]);
 				strcpy(point_2[j], ch);
-				//printf("Point_%d[%d] -> %s ",i+1, j, point_2[j]);
-				j = j + 2;
+				printf("Point_1[%d] -> %s\n", j, point_1[j]);
+				printf("Point_2[%d] -> %s\n", j, point_2[j]);
+				j = j + 1;
 			}
 
 			else {
 				i++;
-				//printf("\n");
+				printf("\n");
 			}
 			ch = strtok(NULL, " 'mkº/h");
 		}
