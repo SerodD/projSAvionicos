@@ -79,16 +79,15 @@ double calculate_true_heading(double info[4]) {
 }
 
 void calculate_velocity_N_E(double **velocity_N_E, double V_TAS, double Theta_Path, double True_Heading) {
-	(*calculate_velocity_N_E)[0] = V_TAS*cos(Theta_Path)*cos(True_Heading);// velocidade para norte
-	(*calculate_velocity_N_E)[1] = V_TAS*cos(Theta_Path)*sin(True_Heading);// velocidade para este
+	(*velocity_N_E)[0] = V_TAS*cos(Theta_Path)*cos(True_Heading);// velocidade para norte
+	(*velocity_N_E)[1] = V_TAS*cos(Theta_Path)*sin(True_Heading);// velocidade para este
 }
 
 int main() {
 
 	FILE *file;
-	double route_distance = 0, time_between_points = 0;
-	double *info;
-	double *velocity_N_E
+	double route_distance = 0, time_between_points = 0, total_route_distance = 0;
+	double *info, *velocity_N_E;
 	char *ch, line[DIM], point_1[NB_DATA][ELE_SIZE], point_2[NB_DATA][ELE_SIZE];
 	int i = 0, j = 0;
 	time_t seconds_prev;
@@ -137,9 +136,11 @@ int main() {
 		process_points(point_1, point_2, &info);
 		if (i == 2) {	
 			route_distance = dist_btw_2points(info);
+			total_route_distance = route_distance;
 		}
 		else if (i > 2) {
-			route_distance = route_distance + dist_btw_2points(info);
+			route_distance = dist_btw_2points(info);
+			total_route_distance = total_route_distance + dist_btw_2points(info);
 		}
 
 		seconds_prev = time(NULL);
@@ -148,7 +149,7 @@ int main() {
 		
 	}
 
-	printf("DISTANCE: %f m \n", route_distance);
+	printf("DISTANCE: %f m \n", total_route_distance);
 
 	fclose(file);
 	return 0;
