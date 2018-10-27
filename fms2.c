@@ -127,7 +127,6 @@ int main() {
 			process_points(point_1, point_2, &info);
 			route_distance = dist_btw_2points(info);
 			calculate_true_heading(info);
-			return 0;
 		}
 
 		else if (i > 2) {
