@@ -78,17 +78,24 @@ double calculate_true_heading(double info[4]) {
 	return heading;
 }
 
+void calculate_velocity_N_E(double **velocity_N_E, double V_TAS, double Theta_Path, double True_Heading) {
+	(*calculate_velocity_N_E)[0] = V_TAS*cos(Theta_Path)*cos(True_Heading);// velocidade para norte
+	(*calculate_velocity_N_E)[1] = V_TAS*cos(Theta_Path)*sin(True_Heading);// velocidade para este
+}
+
 int main() {
 
 	FILE *file;
 	double route_distance = 0, time_between_points = 0;
 	double *info;
+	double *velocity_N_E
 	char *ch, line[DIM], point_1[NB_DATA][ELE_SIZE], point_2[NB_DATA][ELE_SIZE];
 	int i = 0, j = 0;
 	time_t seconds_prev;
 	time_t seconds_act;
 	file = fopen("waypoints.txt", "r"); // abrir ficheiro
 	info = calloc(5, sizeof(double));
+	velocity_N_E = calloc(2, sizeof(double));
 
 	if (file == NULL) {     // check if file was correctly opened
 		printf("Error opening file");
@@ -127,19 +134,18 @@ int main() {
 			ch = strtok(NULL, " 'mkº/h");
 		}
 
-		if (i == 2) {
-			process_points(point_1, point_2, &info);
+		process_points(point_1, point_2, &info);
+		if (i == 2) {	
 			route_distance = dist_btw_2points(info);
-			time_between_points = route_distance/(info[5]);
-			seconds_prev = time(NULL);
-			printf("%f   %f \n", time_between_points, (double)seconds_prev);
-			calculate_true_heading(info);
 		}
-
 		else if (i > 2) {
-			process_points(point_1, point_2, &info);
 			route_distance = route_distance + dist_btw_2points(info);
 		}
+
+		seconds_prev = time(NULL);
+		time_between_points = route_distance / (info[5]);
+		calculate_true_heading(info);
+		
 	}
 
 	printf("DISTANCE: %f m \n", route_distance);
