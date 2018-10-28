@@ -15,6 +15,7 @@
 #define RAD_TO_DEG 180/PI
 #define ALPHA 0.0001
 #define KMH_TO_MS 1000/3600
+#define TIME_ACEL 120
 
 void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_SIZE], double **info) { //função para calcular distância entre 2 pontos consecutivos
 
@@ -82,7 +83,6 @@ double calculate_true_heading(double info[7]) {
 	double y = sin(var_lamba)*cos(phi_2);
 	double x = (cos(phi_1)*sin(phi_2)) - (sin(phi_1)*cos(phi_2)*cos(var_lamba));
 	double heading = atan2(y, x)*RAD_TO_DEG;
-	printf("heading: %f, x: %f, y: %f\n", heading, x, y);
 	return heading;
 }
 
@@ -168,10 +168,14 @@ int main() {
 
 			// processar caminho (isto agora vai estar meio preso aqui, porque o tempo não está muito acelerado)
 
-			while(time_between_points >= ((double)seconds_act - (double)seconds_init*120)) {
+			while(time_between_points >= ((double)seconds_act - (double)seconds_init)*TIME_ACEL) {
 				seconds_act = time(NULL);
-				if (((double)seconds_act - (double)seconds_prev) * 120 >= 120) {
-					time_div = ((double)seconds_act - (double)seconds_prev) * 120;
+				if (((double)seconds_act - (double)seconds_prev) >= 1) {
+					time_div = ((double)seconds_act - (double)seconds_prev) * TIME_ACEL;
+
+					if (((double)seconds_act - (double)seconds_init)*TIME_ACEL > time_between_points) {
+						time_div = (double)seconds_act - (double)seconds_init;
+					}
 					height = height + height_dev * time_div;
 					height_dev = calculate_height_dev(height, info[5]);
 					true_heading = calculate_true_heading(info);
@@ -183,6 +187,7 @@ int main() {
 					info[1] = info[1] + ((velocity_N_E[1] * time_div) / (height + EARTH_RADIUS));
 					seconds_prev = seconds_act;
 					printf("Longitude 1: %f | Latitude 1: %f | Longitude 2: %f | Latitude 2: %f Altura: %f |  Altura final: %f\n", info[0], info[1], info[2], info[3], height, info[5]);
+					
 					//getchar();
 				}
 			}
