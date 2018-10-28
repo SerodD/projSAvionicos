@@ -16,10 +16,10 @@
 
 void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_SIZE], double **info) { //função para calcular distância entre 2 pontos consecutivos
 
-	for (int i = 0; i < NB_DATA; i = i + 1) {
+	/*for (int i = 0; i < NB_DATA; i = i + 1) {
 		printf("%s, %s ", point_1[i], point_2[i]);
 		printf("\n");
-	}
+	}*/
 
 	double phi_1 = atof(point_1[0]) + atof(point_1[1]) / 60 + atof(point_1[2]) / 3600;  //conversão de Degrees-Minutes-Seconds para graus
 	if (strcmp(point_1[3], "S") == 0) {   //Latitude -> para Sul o ângulo varia entre 0 e -90
@@ -92,7 +92,7 @@ double calculate_theta_path(double V_TAS, double height_dev) {
 int main() {
 
 	FILE *file;
-	double route_distance = 0, time_between_points = 0, total_route_distance = 0, height_dev = 0, height = 0;
+	double route_distance = 0, time_between_points = 0, total_route_distance = 0, height_dev = 0, height = 0, true_heading = 0;
 	double *info, *velocity_N_E;
 	char *ch, line[DIM], point_1[NB_DATA][ELE_SIZE], point_2[NB_DATA][ELE_SIZE];
 	int i = 0, j = 0;
@@ -114,24 +114,24 @@ int main() {
 											 //(neste caso, point_1 e point_2) 
 	                              
 		while (ch != NULL) {
-            printf("CH -> %s\n", ch);
+            //printf("CH -> %s\n", ch);
 			if (*ch != '\n' && i == 0) {
 				strcpy(point_1[j], ch);
-				printf("Point_1[%d] -> %s\n", j, point_1[j]);
+				//printf("Point_1[%d] -> %s\n", j, point_1[j]);
 				j = j + 1;
 			}
 
 			else if (*ch != '\n' && i == 1) {
 				strcpy(point_2[j], ch);
-				printf("Point_2[%d] -> %s\n", j, point_2[j]);
+				//printf("Point_2[%d] -> %s\n", j, point_2[j]);
 				j = j + 1;
 			}
 
 			else if (*ch != '\n' && i > 1) {
 				strcpy(point_1[j], point_2[j]);
 				strcpy(point_2[j], ch);
-				printf("Point_1[%d] -> %s\n", j, point_1[j]);
-				printf("Point_2[%d] -> %s\n", j, point_2[j]);
+				//printf("Point_1[%d] -> %s\n", j, point_1[j]);
+				//printf("Point_2[%d] -> %s\n", j, point_2[j]);
 				j = j + 1;
 			}
 
@@ -149,19 +149,21 @@ int main() {
 			total_route_distance = total_route_distance + route_distance;
 			seconds_init = time(NULL);
 			seconds_prev = seconds_init;
+			seconds_act = seconds_init; //comentar para o ciclo while não funcionar
 			time_between_points = route_distance/(info[6]);
-			calculate_true_heading(info);
+			true_heading = calculate_true_heading(info);
 			height = info[4];   
 			
 
 			// processar caminho (isto agora vai estar meio preso aqui, porque o tempo não está muito acelerado)
 
-			while(time_between_points <= ((double)seconds_init - (double)seconds_act)*60) {
+			while(time_between_points >= ((double)seconds_init - (double)seconds_act)) {
 				seconds_act = time(NULL);
-				if (((double)seconds_prev - (double)seconds_act)*60 >= 60) {
+				printf("tempo_actual:%f tempo_prev:%f tempo_init:%f dif_tempo: %f\n", (double)seconds_act, (double)seconds_prev, (double)seconds_init, ((double)seconds_act - (double)seconds_prev));
+				if (((double)seconds_act - (double)seconds_prev) >= 60) {
 					height_dev = calculate_height_dev(height, info[5]);
 					height = height + height_dev;
-					calculate_true_heading(info);
+					true_heading = calculate_true_heading(info);
 					seconds_prev = seconds_act;
 				}
 			}
