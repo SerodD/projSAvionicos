@@ -71,10 +71,10 @@ double calculate_height_dev(double present_height, double final_height) {
 }
 
 double calculate_true_heading(double info[7]) {
-	double y = sin((info[3]*DEG_TO_RAD) - (info[1]*DEG_TO_RAD))*cos(info[2]* DEG_TO_RAD);
-	double x = (cos(info[0]*DEG_TO_RAD)*sin(info[2])*DEG_TO_RAD) - (sin(info[0]* DEG_TO_RAD)*cos(info[2]*DEG_TO_RAD)*cos((info[3]*DEG_TO_RAD) - (info[1]*DEG_TO_RAD)));
-	double heading = atan2(x, y)* (1/DEG_TO_RAD);
-	//printf("heading: %f\n", heading);
+	double x = cos(info[2] * DEG_TO_RAD)*sin((info[3]*DEG_TO_RAD) - (info[1]*DEG_TO_RAD));
+	double y = (cos(info[0]*DEG_TO_RAD)*sin(info[2])*DEG_TO_RAD) - (sin(info[0]*DEG_TO_RAD)*cos(info[2]*DEG_TO_RAD)*cos(info[3]*DEG_TO_RAD - info[1]*DEG_TO_RAD));
+	double heading = atan2(y, x);
+	printf("heading: %f, x: %f, y: %f\n", heading, x, y);
 	return heading;
 }
 
@@ -168,7 +168,9 @@ int main() {
 					height_dev = calculate_height_dev(height, info[5]);
 					true_heading = calculate_true_heading(info);
 					theta_path = calculate_theta_path(info[6], height_dev);
+					printf("theta_path: %f  true_heading: %f \n", theta_path, true_heading);
 					calculate_velocity_N_E(&velocity_N_E, info[6], theta_path, true_heading);
+					printf("VN: %f VE:%f \n", velocity_N_E[0], velocity_N_E[1]);
 					info[0] = info[0] + ((velocity_N_E[0] * time_div) / (height + EARTH_RADIUS));
 					info[1] = info[1] + ((velocity_N_E[1] * time_div) / (height + EARTH_RADIUS));
 					seconds_prev = seconds_act;
