@@ -14,6 +14,7 @@
 #define DEG_TO_RAD PI/180
 #define RAD_TO_DEG 180/PI
 #define ALPHA 0.0001
+#define KMH_TO_MS 1000/3600
 
 void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_SIZE], double **info) { //função para calcular distância entre 2 pontos consecutivos
 
@@ -157,12 +158,12 @@ int main() {
 			seconds_init = time(NULL);
 			seconds_prev = seconds_init;
 			seconds_act = seconds_init;
-			time_between_points = route_distance/(info[6]);
+			time_between_points = route_distance/(info[6]*KMH_TO_MS);
 			height = info[4];
 			height_dev = calculate_height_dev(height, info[5]);
 			true_heading = calculate_true_heading(info);
-			theta_path = calculate_theta_path(info[6], height_dev);
-			calculate_velocity_N_E(&velocity_N_E, info[6], theta_path, true_heading);
+			theta_path = calculate_theta_path(info[6]*KMH_TO_MS, height_dev);
+			calculate_velocity_N_E(&velocity_N_E, info[6]*KMH_TO_MS, theta_path, true_heading);
 			
 
 			// processar caminho (isto agora vai estar meio preso aqui, porque o tempo não está muito acelerado)
@@ -174,15 +175,15 @@ int main() {
 					height = height + height_dev * time_div;
 					height_dev = calculate_height_dev(height, info[5]);
 					true_heading = calculate_true_heading(info);
-					theta_path = calculate_theta_path(info[6], height_dev);
-					printf("theta_path: %f  true_heading: %f \n", theta_path, true_heading);
-					calculate_velocity_N_E(&velocity_N_E, info[6], theta_path, true_heading);
+					theta_path = calculate_theta_path(info[6]*KMH_TO_MS, height_dev);
+					printf("Elevação: %f | Azimute: %f\n", theta_path, true_heading);
+					calculate_velocity_N_E(&velocity_N_E, info[6]*KMH_TO_MS, theta_path, true_heading);
 					printf("VN: %f VE:%f \n", velocity_N_E[0], velocity_N_E[1]);
 					info[0] = info[0] + ((velocity_N_E[0] * time_div) / (height + EARTH_RADIUS));
 					info[1] = info[1] + ((velocity_N_E[1] * time_div) / (height + EARTH_RADIUS));
 					seconds_prev = seconds_act;
-					printf("phi1: %f lambda1: %f phi2: %f lambda2: %f altura: %f  altura_final: %f \n", info[0], info[1], info[2], info[3], height, info[5]);
-					getchar();
+					printf("Longitude 1: %f | Latitude 1: %f | Longitude 2: %f | Latitude 2: %f Altura: %f |  Altura final: %f\n", info[0], info[1], info[2], info[3], height, info[5]);
+					//getchar();
 				}
 			}
 		}
