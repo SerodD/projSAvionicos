@@ -79,8 +79,14 @@ double calculate_true_heading(double info[7]) {
 }
 
 void calculate_velocity_N_E(double **velocity_N_E, double V_TAS, double Theta_Path, double True_Heading) {
-	(*velocity_N_E)[0] = V_TAS*cos(Theta_Path)*cos(True_Heading);// velocidade para norte
-	(*velocity_N_E)[1] = V_TAS*cos(Theta_Path)*sin(True_Heading);// velocidade para este
+	(*velocity_N_E)[0] = V_TAS*cos(Theta_Path*DEG_TO_RAD)*cos(True_Heading*DEG_TO_RAD);// velocidade para norte
+	(*velocity_N_E)[1] = V_TAS*cos(Theta_Path*DEG_TO_RAD)*sin(True_Heading*DEG_TO_RAD);// velocidade para este
+	return;
+}
+
+double calculate_theta_path(double V_TAS, double height_dev) {
+	double theta_path = asin(height_dev / V_TAS)*(1/ DEG_TO_RAD);
+	return theta_path;
 }
 
 int main() {
