@@ -7,7 +7,7 @@
 #include <time.h>
 
 #define DIM 100
-#define NB_DATA 9
+#define NB_DATA 10
 #define ELE_SIZE 10
 #define EARTH_RADIUS 6371000
 #define PI 3.14159265359
@@ -28,7 +28,7 @@ void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_S
 	printf("PHI_1 %f\n", phi_1);
 
 	double lambda_1 = atof(point_1[4]) + atof(point_1[5]) / 60 + atof(point_1[6]) / 3600;
-	if (strcmp(point_1[7], "E") == 0) {  //Longitude -> para Este o ângulo varia entre 0 e -180
+	if (strcmp(point_1[7], "W") == 0) {  //Longitude -> para Este o ângulo varia entre 0 e -180
 		lambda_1 = -lambda_1;
 	}
 	printf("LAMBDA_1 %f\n", lambda_1);
@@ -40,7 +40,7 @@ void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_S
 	printf("PHI_2 %f\n", phi_2);
 	
 	double lambda_2 = atof(point_2[4]) + atof(point_2[5]) / 60 + atof(point_2[6]) / 3600;
-	if (strcmp(point_2[7], "E") == 0) {
+	if (strcmp(point_2[7], "W") == 0) {
 		lambda_2 = -lambda_2;
 	}
 	printf("LAMBDA_2 %f\n", lambda_2);
@@ -53,13 +53,12 @@ void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_S
 	(*info)[5] = atof(point_2[8]); // Altitude do ponto final
 	(*info)[6] = atof(point_1[9]); // velocidade
 
-
 	return;
 }
 
-double dist_btw_2points(double info[4]) { //função para calcular distância entre 2 pontos consecutivos
+double dist_btw_2points(double info[7]) { //função para calcular distância entre 2 pontos consecutivos
 	double distance;
-	distance = acos(sin(info[0]*DEG_TO_RAD)*sin(info[2]*DEG_TO_RAD) + cos(info[0]*DEG_TO_RAD)*cos(info[2]*DEG_TO_RAD)*cos(info[3]*DEG_TO_RAD - info[1] * DEG_TO_RAD)) * (info[4] + EARTH_RADIUS);  // great-circle 
+	distance = acos(sin(info[0]*DEG_TO_RAD)*sin(info[2]*DEG_TO_RAD) + cos(info[0]*DEG_TO_RAD)*cos(info[2]*DEG_TO_RAD)*cos(info[1]*DEG_TO_RAD - info[3] * DEG_TO_RAD)) * (info[4] + EARTH_RADIUS);  // great-circle 
 																													  // distance
 	// https://en.wikipedia.org/wiki/Great-circle_distance
 	
@@ -71,7 +70,7 @@ double calculate_height_dev(double present_height, double final_height) {
 	return height_dev;
 }
 
-double calculate_true_heading(double info[4]) {
+double calculate_true_heading(double info[7]) {
 	double y = sin((info[3]*DEG_TO_RAD) - (info[1]*DEG_TO_RAD))*cos(info[2]* DEG_TO_RAD);
 	double x = (cos(info[0]*DEG_TO_RAD)*sin(info[2])*DEG_TO_RAD) - (sin(info[0]* DEG_TO_RAD)*cos(info[2]*DEG_TO_RAD)*cos((info[3]*DEG_TO_RAD) - (info[1]*DEG_TO_RAD)));
 	double heading = atan2(x, y)* (1/DEG_TO_RAD);
@@ -92,20 +91,22 @@ int main() {
 	char *ch, line[DIM], point_1[NB_DATA][ELE_SIZE], point_2[NB_DATA][ELE_SIZE];
 	int i = 0, j = 0;
 	time_t seconds_prev, seconds_init, seconds_act;
-	file = fopen("waypoints.txt", "r"); // abrir ficheiro
-	info = calloc(6, sizeof(double));
+	
+	file = fopen("cities.txt", "r"); // abrir ficheiro
+	info = calloc(7, sizeof(double));
 	velocity_N_E = calloc(2, sizeof(double));
 
 	if (file == NULL) {     // check if file was correctly opened
 		printf("Error opening file");
 		return 0;
 	}
-
+    
 	while (fgets(line, DIM, file) != NULL) {  //condição do while lê linha a linha do ficheiro e passa a linha respetiva para a variável line
-		j = 0;                               // o objetivo é pegar em dois consecutivos do ficheiro (seguir ordem) e calcular a distância 
+		j = 0;                               // o objetivo é pegar em dois pontos consecutivos do ficheiro (seguir ordem) e calcular a distância 
 		ch = strtok(line, " 'mkº/h");        // entre eles (a distância constante) e assim sucessivamente.  
 											 // strtok elimina os caracteres indicados da string. fiz isso para depois meter tudo num vector 
-											 //(neste caso, point_1 e point_2)                           
+											 //(neste caso, point_1 e point_2) 
+	                              
 		while (ch != NULL) {
             printf("CH -> %s\n", ch);
 			if (*ch != '\n' && i == 0) {
@@ -163,7 +164,10 @@ int main() {
 	}
 
 	printf("DISTANCE: %f m \n", total_route_distance);
+	
+	free(info);
 
 	fclose(file);
+	
 	return 0;
 }
