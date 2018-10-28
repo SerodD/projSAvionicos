@@ -17,10 +17,10 @@
 
 void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_SIZE], double **info) { //função para calcular distância entre 2 pontos consecutivos
 
-	/*for (int i = 0; i < NB_DATA; i = i + 1) {
+	for (int i = 0; i < NB_DATA; i = i + 1) {
 		printf("%s, %s ", point_1[i], point_2[i]);
 		printf("\n");
-	}*/
+	}
 
 	double phi_1 = atof(point_1[0]) + atof(point_1[1]) / 60 + atof(point_1[2]) / 3600;  //conversão de Degrees-Minutes-Seconds para graus
 	if (strcmp(point_1[3], "S") == 0) {   //Latitude -> para Sul o ângulo varia entre 0 e -90
@@ -72,9 +72,15 @@ double calculate_height_dev(double present_height, double final_height) {
 }
 
 double calculate_true_heading(double info[7]) {
-	double x = cos(info[2]*DEG_TO_RAD)*sin((info[3]*DEG_TO_RAD) - (info[1]*DEG_TO_RAD));
-	double y = (cos(info[0]*DEG_TO_RAD)*sin(info[2])*DEG_TO_RAD) - (sin(info[0]*DEG_TO_RAD)*cos(info[2]*DEG_TO_RAD)*cos(info[3]*DEG_TO_RAD - info[1]*DEG_TO_RAD));
-	double heading = atan2(x, y)*RAD_TO_DEG;
+	double phi_1 = info[0]*DEG_TO_RAD;
+	double lambda_1 = info[1]*DEG_TO_RAD;
+	double phi_2 = info[2]*DEG_TO_RAD;
+	double lambda_2 = info[3]*DEG_TO_RAD;
+	double var_lamba = lambda_2 - lambda_1;
+
+	double y = sin(var_lamba)*cos(phi_2);
+	double x = (cos(phi_1)*sin(phi_2)) - (sin(phi_1)*cos(phi_2)*cos(var_lamba));
+	double heading = atan2(y, x)*RAD_TO_DEG;
 	printf("heading: %f, x: %f, y: %f\n", heading, x, y);
 	return heading;
 }
