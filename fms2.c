@@ -12,7 +12,8 @@
 #define EARTH_RADIUS 6371000
 #define PI 3.14159265359
 #define DEG_TO_RAD PI/180
-#define ALPHA 0.001
+#define RAD_TO_DEG 180/PI
+#define ALPHA 0.0001
 
 void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_SIZE], double **info) { //função para calcular distância entre 2 pontos consecutivos
 
@@ -71,9 +72,9 @@ double calculate_height_dev(double present_height, double final_height) {
 }
 
 double calculate_true_heading(double info[7]) {
-	double x = cos(info[2] * DEG_TO_RAD)*sin((info[3]*DEG_TO_RAD) - (info[1]*DEG_TO_RAD));
+	double x = cos(info[2]*DEG_TO_RAD)*sin((info[3]*DEG_TO_RAD) - (info[1]*DEG_TO_RAD));
 	double y = (cos(info[0]*DEG_TO_RAD)*sin(info[2])*DEG_TO_RAD) - (sin(info[0]*DEG_TO_RAD)*cos(info[2]*DEG_TO_RAD)*cos(info[3]*DEG_TO_RAD - info[1]*DEG_TO_RAD));
-	double heading = atan2(y, x);
+	double heading = atan2(x, y)*RAD_TO_DEG;
 	printf("heading: %f, x: %f, y: %f\n", heading, x, y);
 	return heading;
 }
@@ -85,7 +86,7 @@ void calculate_velocity_N_E(double **velocity_N_E, double V_TAS, double Theta_Pa
 }
 
 double calculate_theta_path(double V_TAS, double height_dev) {
-	double theta_path = asin(height_dev / V_TAS)*(1/ DEG_TO_RAD);
+	double theta_path = asin(height_dev / V_TAS)*RAD_TO_DEG;
 	return theta_path;
 }
 
