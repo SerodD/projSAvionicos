@@ -149,7 +149,7 @@ int main() {
 			total_route_distance = total_route_distance + route_distance;
 			seconds_init = time(NULL);
 			seconds_prev = seconds_init;
-			seconds_act = seconds_init; //comentar para o ciclo while não funcionar
+			seconds_act = seconds_init;
 			time_between_points = route_distance/(info[6]);
 			true_heading = calculate_true_heading(info);
 			height = info[4];   
@@ -157,7 +157,7 @@ int main() {
 
 			// processar caminho (isto agora vai estar meio preso aqui, porque o tempo não está muito acelerado)
 
-			while(time_between_points >= ((double)seconds_init - (double)seconds_act)) {
+			while(time_between_points >= ((double)seconds_act - (double)seconds_init) {
 				seconds_act = time(NULL);
 				printf("tempo_actual:%f tempo_prev:%f tempo_init:%f dif_tempo: %f\n", (double)seconds_act, (double)seconds_prev, (double)seconds_init, ((double)seconds_act - (double)seconds_prev));
 				if (((double)seconds_act - (double)seconds_prev) >= 60) {
