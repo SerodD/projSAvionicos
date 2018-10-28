@@ -157,7 +157,7 @@ int main() {
 
 			// processar caminho (isto agora vai estar meio preso aqui, porque o tempo não está muito acelerado)
 
-			while(time_between_points >= ((double)seconds_act - (double)seconds_init) {
+			while(time_between_points >= ((double)seconds_act - (double)seconds_init)) {
 				seconds_act = time(NULL);
 				printf("tempo_actual:%f tempo_prev:%f tempo_init:%f dif_tempo: %f\n", (double)seconds_act, (double)seconds_prev, (double)seconds_init, ((double)seconds_act - (double)seconds_prev));
 				if (((double)seconds_act - (double)seconds_prev) >= 60) {
