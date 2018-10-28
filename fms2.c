@@ -12,7 +12,7 @@
 #define EARTH_RADIUS 6371000
 #define PI 3.14159265359
 #define DEG_TO_RAD PI/180
-#define ALPHA 1
+#define ALPHA 0.001
 
 void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_SIZE], double **info) { //função para calcular distância entre 2 pontos consecutivos
 
@@ -74,7 +74,7 @@ double calculate_true_heading(double info[7]) {
 	double y = sin((info[3]*DEG_TO_RAD) - (info[1]*DEG_TO_RAD))*cos(info[2]* DEG_TO_RAD);
 	double x = (cos(info[0]*DEG_TO_RAD)*sin(info[2])*DEG_TO_RAD) - (sin(info[0]* DEG_TO_RAD)*cos(info[2]*DEG_TO_RAD)*cos((info[3]*DEG_TO_RAD) - (info[1]*DEG_TO_RAD)));
 	double heading = atan2(x, y)* (1/DEG_TO_RAD);
-	printf("heading: %f\n", heading);
+	//printf("heading: %f\n", heading);
 	return heading;
 }
 
@@ -92,7 +92,7 @@ double calculate_theta_path(double V_TAS, double height_dev) {
 int main() {
 
 	FILE *file;
-	double route_distance = 0, time_between_points = 0, total_route_distance = 0, height_dev = 0, height = 0, true_heading = 0;
+	double route_distance = 0, time_between_points = 0, total_route_distance = 0, height_dev = 0, height = 0, true_heading = 0, theta_path = 0, time_div = 0;
 	double *info, *velocity_N_E;
 	char *ch, line[DIM], point_1[NB_DATA][ELE_SIZE], point_2[NB_DATA][ELE_SIZE];
 	int i = 0, j = 0;
@@ -151,20 +151,29 @@ int main() {
 			seconds_prev = seconds_init;
 			seconds_act = seconds_init;
 			time_between_points = route_distance/(info[6]);
+			height = info[4];
+			height_dev = calculate_height_dev(height, info[5]);
 			true_heading = calculate_true_heading(info);
-			height = info[4];   
+			theta_path = calculate_theta_path(info[6], height_dev);
+			calculate_velocity_N_E(&velocity_N_E, info[6], theta_path, true_heading);
 			
 
 			// processar caminho (isto agora vai estar meio preso aqui, porque o tempo não está muito acelerado)
 
-			while(time_between_points >= ((double)seconds_act - (double)seconds_init)) {
+			while(time_between_points >= ((double)seconds_act - (double)seconds_init*120)) {
 				seconds_act = time(NULL);
-				printf("tempo_actual:%f tempo_prev:%f tempo_init:%f dif_tempo: %f\n", (double)seconds_act, (double)seconds_prev, (double)seconds_init, ((double)seconds_act - (double)seconds_prev));
-				if (((double)seconds_act - (double)seconds_prev) >= 60) {
+				if (((double)seconds_act - (double)seconds_prev) * 120 >= 120) {
+					time_div = ((double)seconds_act - (double)seconds_prev) * 120;
+					height = height + height_dev * time_div;
 					height_dev = calculate_height_dev(height, info[5]);
-					height = height + height_dev;
 					true_heading = calculate_true_heading(info);
+					theta_path = calculate_theta_path(info[6], height_dev);
+					calculate_velocity_N_E(&velocity_N_E, info[6], theta_path, true_heading);
+					info[0] = info[0] + ((velocity_N_E[0] * time_div) / (height + EARTH_RADIUS));
+					info[1] = info[1] + ((velocity_N_E[1] * time_div) / (height + EARTH_RADIUS));
 					seconds_prev = seconds_act;
+					printf("phi1: %f lambda1: %f phi2: %f lambda2: %f altura: %f  altura_final: %f \n", info[0], info[1], info[2], info[3], height, info[5]);
+					getchar();
 				}
 			}
 		}
@@ -172,7 +181,6 @@ int main() {
 	}
 
 	printf("DISTANCE: %f m \n", total_route_distance);
-	
 	free(info);
 
 	fclose(file);
