@@ -178,15 +178,15 @@ int main() {
 						time_div = ((double)seconds_act - (double)seconds_init);
 					}
 					height = height + (height_dev * time_div);
+					info[0] = info[0] + ((velocity_N_E[0] * time_div) / (height + EARTH_RADIUS));
+					info[1] = info[1] + ((velocity_N_E[1] * time_div) / (height + EARTH_RADIUS));
+					printf("Elevacao: %f | Azimute: %f\n", theta_path, true_heading);
+					printf("VN: %f VE:%f \n", velocity_N_E[0], velocity_N_E[1]);
+					printf("Longitude 1: %f | Latitude 1: %f | Longitude 2: %f | Latitude 2: %f Altura: %f |  Altura final: %f\n", info[0], info[1], info[2], info[3], height, info[5]);
 					height_dev = calculate_height_dev(height, info[5]);
 					true_heading = calculate_true_heading(info);
 					theta_path = calculate_theta_path(info[6]*KMH_TO_MS, height_dev);
-					printf("Elevacao: %f | Azimute: %f\n", theta_path, true_heading);
 					calculate_velocity_N_E(&velocity_N_E, info[6]*KMH_TO_MS, theta_path, true_heading);
-					printf("VN: %f VE:%f \n", velocity_N_E[0], velocity_N_E[1]);
-					info[0] = info[0] + ((velocity_N_E[0] * time_div) / (height + EARTH_RADIUS));
-					info[1] = info[1] + ((velocity_N_E[1] * time_div) / (height + EARTH_RADIUS));
-					printf("Longitude 1: %f | Latitude 1: %f | Longitude 2: %f | Latitude 2: %f Altura: %f |  Altura final: %f\n", info[0], info[1], info[2], info[3], height, info[5]);
 					
 					//getchar();
 				}
