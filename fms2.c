@@ -16,18 +16,14 @@
 #define ALPHA 0.001
 #define KMH_TO_MS 1000/3600
 #define TIME_ACEL 180
-<<<<<<< HEAD
 #define T 20*60
-=======
-#define 
->>>>>>> parent of 8a05ce3... funçao para o V_m
 
 void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_SIZE], double **info) { //função para calcular distância entre 2 pontos consecutivos
 
 	for (int i = 0; i < NB_DATA; i = i + 1) {
 		printf("%s, %s ", point_1[i], point_2[i]);
 		printf("\n");
-	}
+	} 
 
 	double phi_1 = atof(point_1[0]) + atof(point_1[1]) / 60 + atof(point_1[2]) / 3600;  //conversão de Degrees-Minutes-Seconds para graus
 	if (strcmp(point_1[3], "S") == 0) {   //Latitude -> para Sul o ângulo varia entre 0 e -90
@@ -102,7 +98,6 @@ double calculate_theta_path(double V_TAS, double height_dev) {
 	return theta_path;
 }
 
-<<<<<<< HEAD
 double calculate_V_m(double V_TAS, double delta_time) {
 	double V_m = V_TAS*(1 + 0.01*sin(2*PI*delta_time/T));
 	return V_m;
@@ -113,18 +108,11 @@ double controller_actuator(double V_sensor, double V_ref) {
     return V_TAS;
 }
 
-int main() {
 
+int main() {
 	FILE *file;
 	double route_distance = 0, time_between_points = 0, total_route_distance = 0, height_dev = 0, height = 0, true_heading = 0, theta_path = 0, time_div = 0, delta_time = 0, true_air_speed = 0, v_ref = 0;
 	double *info, *velocity_N_E, *info_m;
-=======
-int main() {
-
-	FILE *file;
-	double route_distance = 0, time_between_points = 0, total_route_distance = 0, height_dev = 0, height = 0, true_heading = 0, theta_path = 0, time_div = 0;
-	double *info, *velocity_N_E;
->>>>>>> parent of 8a05ce3... funçao para o V_m
 	char *ch, line[DIM], point_1[NB_DATA][ELE_SIZE], point_2[NB_DATA][ELE_SIZE];
 	int i = 0, j = 0;
 	time_t seconds_prev, seconds_init, seconds_act;
