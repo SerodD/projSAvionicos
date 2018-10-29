@@ -13,7 +13,7 @@
 #define PI 3.14159265359
 #define DEG_TO_RAD PI/180
 #define RAD_TO_DEG 180/PI
-#define ALPHA 0.0001
+#define ALPHA 0.001
 #define KMH_TO_MS 1000/3600
 #define TIME_ACEL 120
 
