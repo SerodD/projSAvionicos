@@ -106,13 +106,14 @@ int main() {
 
 	FILE *file;
 	double route_distance = 0, time_between_points = 0, total_route_distance = 0, height_dev = 0, height = 0, true_heading = 0, theta_path = 0, time_div = 0, delta_time = 0;
-	double *info, *velocity_N_E;
+	double *info, *velocity_N_E, *info_m;
 	char *ch, line[DIM], point_1[NB_DATA][ELE_SIZE], point_2[NB_DATA][ELE_SIZE];
 	int i = 0, j = 0;
 	time_t seconds_prev, seconds_init, seconds_act;
 	
 	file = fopen("cities.txt", "r"); // abrir ficheiro
 	info = calloc(7, sizeof(double));
+	info_m = calloc(2, sizeof(double));
 	velocity_N_E = calloc(2, sizeof(double));
 
 	if (file == NULL) {     // check if file was correctly opened
@@ -168,6 +169,8 @@ int main() {
 			true_heading = calculate_true_heading(info);
 			theta_path = calculate_theta_path(info[6]*KMH_TO_MS, height_dev);
 			calculate_velocity_N_E(&velocity_N_E, info[6]*KMH_TO_MS, theta_path, true_heading);
+			info_m[0] = ;
+			info_m[1] = ;
 			
 			while(dist_btw_2points(info) > 10000) {
 				seconds_act = time(NULL);
@@ -175,11 +178,11 @@ int main() {
 					time_div = ((double)seconds_act - (double)seconds_prev) * TIME_ACEL;
 					delta_time = (double)seconds_act - (double)seconds_init;
 					seconds_prev = seconds_act;
-
+					calculate_V_m(double V_TAS, double time_div)
 					height = height + (height_dev * time_div);
 					info[0] = info[0] + (((velocity_N_E[0] * time_div) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
 					info[1] = info[1] + (((velocity_N_E[1] * time_div) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
-					printf(" V_TAS: %f distancia_proximo_waypoing: %f \n", info[6],dist_btw_2points(info));
+					printf(" V_TAS: %f | Distancia_proximo_waypoing: %f \n", info[6],dist_btw_2points(info));
 					printf("Elevacao: %f | Azimute: %f\n", theta_path, true_heading);
 					printf("Longitude 1: %f | Latitude 1: %f | Longitude 2: %f | Latitude 2: %f Altura: %f |  Altura final: %f\n", info[0], info[1], info[2], info[3], height, info[5]);
 					height_dev = calculate_height_dev(height, info[5]);
