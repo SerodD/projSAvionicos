@@ -16,7 +16,7 @@
 #define ALPHA 0.001
 #define KMH_TO_MS 1000/3600
 #define TIME_ACEL 180
-#define 
+#define T	20*60
 
 void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_SIZE], double **info) { //função para calcular distância entre 2 pontos consecutivos
 
@@ -98,10 +98,14 @@ double calculate_theta_path(double V_TAS, double height_dev) {
 	return theta_path;
 }
 
+double calculate_V_m(double V_TAS, double delta_time) {
+	double V_m = V_TAS(1 + 0.01*sin(2*PI*delta_time/T);
+	return V_m;
+}
 int main() {
 
 	FILE *file;
-	double route_distance = 0, time_between_points = 0, total_route_distance = 0, height_dev = 0, height = 0, true_heading = 0, theta_path = 0, time_div = 0;
+	double route_distance = 0, time_between_points = 0, total_route_distance = 0, height_dev = 0, height = 0, true_heading = 0, theta_path = 0, time_div = 0, delta_time = 0;
 	double *info, *velocity_N_E;
 	char *ch, line[DIM], point_1[NB_DATA][ELE_SIZE], point_2[NB_DATA][ELE_SIZE];
 	int i = 0, j = 0;
@@ -165,13 +169,11 @@ int main() {
 			theta_path = calculate_theta_path(info[6]*KMH_TO_MS, height_dev);
 			calculate_velocity_N_E(&velocity_N_E, info[6]*KMH_TO_MS, theta_path, true_heading);
 			
-
-			// processar caminho (isto agora vai estar meio preso aqui, porque o tempo não está muito acelerado)
-
 			while(dist_btw_2points(info) > 10000) {
 				seconds_act = time(NULL);
 				if (((double)seconds_act - (double)seconds_prev) >= 1) {
 					time_div = ((double)seconds_act - (double)seconds_prev) * TIME_ACEL;
+					delta_time = (double)seconds_act - (double)seconds_init;
 					seconds_prev = seconds_act;
 
 					height = height + (height_dev * time_div);
