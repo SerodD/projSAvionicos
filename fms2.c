@@ -107,6 +107,7 @@ double controller_actuator(double V_sensor, double V_ref) {
     double V_TAS = V_sensor + (V_ref - V_sensor) + 10;
     return V_TAS;
 }
+
 int main() {
 
 	FILE *file;
@@ -118,7 +119,6 @@ int main() {
 	
 	file = fopen("cities.txt", "r"); // abrir ficheiro
 	info = calloc(7, sizeof(double));
-	info_m = calloc(2, sizeof(double));
 	velocity_N_E = calloc(2, sizeof(double));
 
 	if (file == NULL) {     // check if file was correctly opened
@@ -176,8 +176,7 @@ int main() {
 			v_ref = info[6] * KMH_TO_MS;
 			theta_path = calculate_theta_path(true_air_speed, height_dev);
 			calculate_velocity_N_E(&velocity_N_E, true_air_speed, theta_path, true_heading);
-			info_m[0] = ;
-			info_m[1] = ;
+
 			
 			while(dist_btw_2points(info) > 10000) {
 				seconds_act = time(NULL);
@@ -189,7 +188,7 @@ int main() {
 					height = height + (height_dev * time_div);
 					info[0] = info[0] + (((velocity_N_E[0] * time_div) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
 					info[1] = info[1] + (((velocity_N_E[1] * time_div) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
-					printf(" V_TAS: %f | Distancia_proximo_waypoing: %f \n", info[6],dist_btw_2points(info));
+					printf("V_TAS: %f | Distancia_proximo_waypoing: %f \n", info[6],dist_btw_2points(info));
 					printf("Elevacao: %f | Azimute: %f\n", theta_path, true_heading);
 					printf("Longitude 1: %f | Latitude 1: %f | Longitude 2: %f | Latitude 2: %f Altura: %f |  Altura final: %f\n", info[0], info[1], info[2], info[3], height, info[5]);
 					height_dev = calculate_height_dev(height, info[5]);
@@ -199,7 +198,6 @@ int main() {
 					//getchar();
 				}
 			}
-			return 0;
 		}
 		
 	}
