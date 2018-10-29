@@ -15,7 +15,8 @@
 #define RAD_TO_DEG 180/PI
 #define ALPHA 0.001
 #define KMH_TO_MS 1000/3600
-#define TIME_ACEL 120
+#define TIME_ACEL 180
+#define 
 
 void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_SIZE], double **info) { //função para calcular distância entre 2 pontos consecutivos
 
@@ -158,7 +159,6 @@ int main() {
 			seconds_init = time(NULL);
 			seconds_prev = seconds_init;
 			seconds_act = seconds_init;
-			time_between_points = route_distance/(info[6]*KMH_TO_MS);
 			height = info[4];
 			height_dev = calculate_height_dev(height, info[5]);
 			true_heading = calculate_true_heading(info);
@@ -168,20 +168,17 @@ int main() {
 
 			// processar caminho (isto agora vai estar meio preso aqui, porque o tempo não está muito acelerado)
 
-			while(time_between_points >= ((double)seconds_act - (double)seconds_init)*TIME_ACEL) {
+			while(dist_btw_2points(info) > 10000) {
 				seconds_act = time(NULL);
 				if (((double)seconds_act - (double)seconds_prev) >= 1) {
 					time_div = ((double)seconds_act - (double)seconds_prev) * TIME_ACEL;
 					seconds_prev = seconds_act;
 
-					if (((double)seconds_act - (double)seconds_init)*TIME_ACEL > time_between_points) {
-						time_div = ((double)seconds_act - (double)seconds_init);
-					}
 					height = height + (height_dev * time_div);
-					info[0] = info[0] + ((velocity_N_E[0] * time_div) / (height + EARTH_RADIUS));
-					info[1] = info[1] + ((velocity_N_E[1] * time_div) / (height + EARTH_RADIUS));
+					info[0] = info[0] + (((velocity_N_E[0] * time_div) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
+					info[1] = info[1] + (((velocity_N_E[1] * time_div) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
+					printf(" V_TAS: %f distancia_proximo_waypoing: %f \n", info[6],dist_btw_2points(info));
 					printf("Elevacao: %f | Azimute: %f\n", theta_path, true_heading);
-					printf("VN: %f VE:%f \n", velocity_N_E[0], velocity_N_E[1]);
 					printf("Longitude 1: %f | Latitude 1: %f | Longitude 2: %f | Latitude 2: %f Altura: %f |  Altura final: %f\n", info[0], info[1], info[2], info[3], height, info[5]);
 					height_dev = calculate_height_dev(height, info[5]);
 					true_heading = calculate_true_heading(info);
