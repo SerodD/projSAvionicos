@@ -180,12 +180,11 @@ int main() {
 			height = info[4];
 			V_ref = info[6];
 
-			for (k = 2; k < 7; k++) {
+			for (k = 0; k < 7; k++) {
 				info_m[k] = info[k];
 			}
 
 			total_route_distance = total_route_distance + dist_btw_point(info);
-			printf("DISTANCE: %f m \n", total_route_distance);
 
 			// processar caminho (isto agora vai estar meio preso aqui, porque o tempo não está muito acelerado)
 
@@ -207,10 +206,10 @@ int main() {
 					info[0] = info[0] + (((velocity_N_E[0] * (time_div)) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
 					info[1] = info[1] + (((velocity_N_E[1] * (time_div)) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
 					V_TAS = controller_actuator(V_TAS_m, V_ref, time_div);
-					printf("V_TAS: %f | Distancia ao proximo waypoint: %f\n", V_TAS, dist_btw_point(info));
+					/*printf("V_TAS: %f | Distancia ao proximo waypoint: %f\n", V_TAS, dist_btw_point(info));
 					printf("Elevacao: %f | Azimute: %f\n", theta_path, true_heading);
 					printf("Latitude Actual: %f | Longitude Actual: %f | Altura Actual: %f\nLatitute Ref.: %f | Longitude Ref.: %f  | Altura Ref.: %f\n", info[0], info[1], height, info[2], info[3], info[5]);
-					printf("\n");
+					printf("\n");*/
                     
 					// V_M
 					V_m = calculate_V_m(V_TAS_m, time_pass);
