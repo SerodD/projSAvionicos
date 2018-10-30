@@ -29,25 +29,25 @@ void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_S
 	if (strcmp(point_1[3], "S") == 0) {   //Latitude -> para Sul o ângulo varia entre 0 e -90
 		phi_1 = -phi_1;
 	}
-	printf("PHI_1 %f\n", phi_1);
+	//printf("PHI_1 %f\n", phi_1);
 
 	double lambda_1 = atof(point_1[4]) + atof(point_1[5]) / 60 + atof(point_1[6]) / 3600;
 	if (strcmp(point_1[7], "W") == 0) {  //Longitude -> para Este o ângulo varia entre 0 e -180
 		lambda_1 = -lambda_1;
 	}
-	printf("LAMBDA_1 %f\n", lambda_1);
+	//printf("LAMBDA_1 %f\n", lambda_1);
 
 	double phi_2 = atof(point_2[0]) + atof(point_2[1]) / 60 + atof(point_2[2]) / 3600;
 	if (strcmp(point_2[3], "S") == 0) {
 		phi_2 = -phi_2;
 	}
-	printf("PHI_2 %f\n", phi_2);
+	//printf("PHI_2 %f\n", phi_2);
 	
 	double lambda_2 = atof(point_2[4]) + atof(point_2[5]) / 60 + atof(point_2[6]) / 3600;
 	if (strcmp(point_2[7], "W") == 0) {
 		lambda_2 = -lambda_2;
 	}
-	printf("LAMBDA_2 %f\n", lambda_2);
+	//printf("LAMBDA_2 %f\n", lambda_2);
 
 	(*info)[0] = phi_1;
 	(*info)[1] = lambda_1;
@@ -60,11 +60,18 @@ void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_S
 	return;
 }
 
-double dist_btw_2points(double info[7]) { //função para calcular distância entre 2 pontos consecutivos
+double dist_btw_point_act_and_ref(double info[7]) { //função para calcular distância entre 2 pontos consecutivos
 	double distance;
-	distance = acos(sin(info[0]*DEG_TO_RAD)*sin(info[2]*DEG_TO_RAD) + cos(info[0]*DEG_TO_RAD)*cos(info[2]*DEG_TO_RAD)*cos(info[1]*DEG_TO_RAD - info[3] * DEG_TO_RAD)) * (info[4] + EARTH_RADIUS);  // great-circle 
+	distance = acos(sin(info[0]*DEG_TO_RAD)*sin(info[2]*DEG_TO_RAD) + cos(info[0]*DEG_TO_RAD)*cos(info[2]*DEG_TO_RAD)*cos(info[1]*DEG_TO_RAD - info[3] * DEG_TO_RAD)) * (info[4] + EARTH_RADIUS); //great-circle 
 																													  // distance
 	// https://en.wikipedia.org/wiki/Great-circle_distance
+	
+	return distance;
+}
+
+double dist_btw_2points(double info_prev[7], double info_act[7]) {
+    double distance;
+	distance = acos(sin(info_prev[0]*DEG_TO_RAD)*sin(info_act[0]*DEG_TO_RAD) + cos(info_prev[0]*DEG_TO_RAD)*cos(info_act[0]*DEG_TO_RAD)*cos(info_prev[1]*DEG_TO_RAD - info_act[1] * DEG_TO_RAD)) * (info_prev[4] + EARTH_RADIUS);
 	
 	return distance;
 }
@@ -79,10 +86,10 @@ double calculate_true_heading(double info[7]) {
 	double lambda_1 = info[1]*DEG_TO_RAD;
 	double phi_2 = info[2]*DEG_TO_RAD;
 	double lambda_2 = info[3]*DEG_TO_RAD;
-	double var_lamba = lambda_2 - lambda_1;
+	double var_lambda = lambda_2 - lambda_1;
 
-	double y = sin(var_lamba)*cos(phi_2);
-	double x = (cos(phi_1)*sin(phi_2)) - (sin(phi_1)*cos(phi_2)*cos(var_lamba));
+	double y = sin(var_lambda)*cos(phi_2);
+	double x = (cos(phi_1)*sin(phi_2)) - (sin(phi_1)*cos(phi_2)*cos(var_lambda));
 	double heading = atan2(y, x)*RAD_TO_DEG;
 	return heading;
 }
@@ -104,7 +111,8 @@ double calculate_V_m(double V_TAS, double delta_time) {
 }
 
 double controller_actuator(double V_sensor, double V_ref) {
-    double V_TAS = V_sensor + (V_ref - V_sensor) + 10;
+    double constante_tempo = 0.08;
+    double V_TAS = (V_ref - V_sensor) - (V_ref - V_sensor) * exp(-constante_tempo*(TIME_ACEL - 1)) + V_sensor;
     return V_TAS;
 }
 
@@ -112,7 +120,7 @@ int main() {
 	FILE *file;
 	double route_distance = 0, time_between_points = 0, total_route_distance = 0, height_dev = 0, height = 0, true_heading = 0, theta_path = 0;
 	double time_pass = 0, time_div = 0, delta_time = 0, V_m = 0, V_TAS = 0, V_ref = 0, V_TAS_m = 0;
-	double *info, *velocity_N_E, *info_m;
+	double *info, *velocity_N_E, *info_m, *info_prev;
 	char *ch, line[DIM], point_1[NB_DATA][ELE_SIZE], point_2[NB_DATA][ELE_SIZE];
 	int i = 0, j = 0, k = 0;
 	time_t seconds_prev, seconds_init, seconds_act;
@@ -120,6 +128,7 @@ int main() {
 	file = fopen("cities.txt", "r"); // abrir ficheiro
 	info = calloc(7, sizeof(double));
 	info_m = calloc(7, sizeof(double));
+	info_prev = calloc(7, sizeof(double));
 	velocity_N_E = calloc(2, sizeof(double));
 
 	if (file == NULL) {     // check if file was correctly opened
@@ -171,8 +180,6 @@ int main() {
 		if (i >= 2) {
 			// antes de processar o caminho (ponto inicial)
 			process_points(point_1, point_2, &info);
-			route_distance = dist_btw_2points(info);
-			total_route_distance = total_route_distance + route_distance;
 			seconds_init = time(NULL);
 			seconds_prev = seconds_init;
 			seconds_act = seconds_init;
@@ -185,7 +192,7 @@ int main() {
 			
 			// processar caminho (isto agora vai estar meio preso aqui, porque o tempo não está muito acelerado)
 
-			while(dist_btw_2points(info) > 10000) {
+			while(dist_btw_point_act_and_ref(info) > 10000) {
 				seconds_act = time(NULL);
 				if ((double)seconds_act - (double)seconds_prev >= 1) {
 					height_dev = calculate_height_dev(height, info[5]);
@@ -193,6 +200,8 @@ int main() {
 					time_div = ((double)seconds_act - (double)seconds_prev) * TIME_ACEL;
 					time_pass = (double)seconds_act - (double)seconds_init * TIME_ACEL;
 					seconds_prev = seconds_act;
+	
+					printf("********************************************************************\n");
 
 					// V_TAS
 					true_heading = calculate_true_heading(info);
@@ -201,30 +210,32 @@ int main() {
 					info[0] = info[0] + (((velocity_N_E[0] * (time_div-ACTUATOR_DELAY)) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
 					info[1] = info[1] + (((velocity_N_E[1] * (time_div-ACTUATOR_DELAY)) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
 					V_TAS = controller_actuator(V_TAS, V_ref);
-					printf("V_TAS: %f | Distancia_proximo_waypoing: %f\n", V_TAS, dist_btw_2points(info));
-					printf("Elevacao: %f | Azimute: %f\n", theta_path, true_heading);
-					printf("Longitude 1: %f | Latitude 1: %f | Longitude 2: %f | Latitude 2: %f Altura: %f | Altura final: %f\n", info[0], info[1], info[2], info[3], height, info[5]);
+					printf("V_TAS: %f | Distância ao próximo waypoint: %f\n", V_TAS, dist_btw_point_act_and_ref(info));
+					printf("Elevação: %f | Azimute: %f\n", theta_path, true_heading);
+					printf("Latitude Actual: %f | Longitude Actual: %f | Altura Actual: %f\nLatitute Ref.: %f | Longitude Ref.: %f  | Altura Ref.: %f\n", info[0], info[1], info[2], info[3], height, info[5]);
 					printf("\n");
-
+                    
 					// V_M
 					V_m = calculate_V_m(V_TAS_m, time_pass);
 					true_heading = calculate_true_heading(info_m);
 					theta_path = calculate_theta_path(V_m * KMH_TO_MS, height_dev);
 					calculate_velocity_N_E(&velocity_N_E, V_m * KMH_TO_MS, theta_path, true_heading);
+					info_prev = info_m;
 					info_m[0] = info_m[0] + (((velocity_N_E[0] * (time_div - ACTUATOR_DELAY)) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
 					info_m[1] = info_m[1] + (((velocity_N_E[1] * (time_div - ACTUATOR_DELAY)) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
 					V_TAS_m = controller_actuator(V_m, V_ref);
-					printf("V_M: %f | Distancia_proximo_waypoing_M: %f\n", V_m, dist_btw_2points(info));
-					printf("Azimute_M: %f\n", true_heading);
-					printf("Longitude 1_M: %f | Latitude 1_M: %f\n", info_m[0], info_m[1]);
+					printf("Velocidade Sensor: %f | Distância ao próximo waypoing sensor: %f\n", V_m, dist_btw_point_act_and_ref(info));
+					printf("Elevação Actual Sensor: %f | Azimute Actual Sensor: %f\n", theta_path, true_heading);
+					printf("Latitude Actual Sensor: %f | Longitude Actual Sensor: %f | Altura Sensor: %f\nLatitude Ref.: %f | Longitude Ref.: %f  | Altura Ref.: %f\n", info_m[0], info_m[1], info[2], info[3], height, info[5]);
 					double erro = sqrt(pow(info_m[0] - info[0], 2.0) + pow(info_m[1] - info[1], 2.0));
 
-					printf("error: %f \n", erro);
-					//getchar();
+					printf("ERRO: %f\n", erro);
+					printf("********************************************************************\n\n\n");
+					
+					total_route_distance = total_route_distance + dist_btw_2points(info_prev, info_m);
 				}
 			}
 		}
-		
 	}
 
 	printf("DISTANCE: %f m \n", total_route_distance);
