@@ -212,7 +212,7 @@ int main() {
 					V_TAS = controller_actuator(V_TAS_m, V_ref, time_div);
 					printf("V_TAS: %f | Distancia ao proximo waypoint: %f\n", V_TAS, dist_btw_point_act_and_ref(info));
 					printf("Elevacao: %f | Azimute: %f\n", theta_path, true_heading);
-					printf("Latitude Actual: %f | Longitude Actual: %f | Altura Actual: %f\nLatitute Ref.: %f | Longitude Ref.: %f  | Altura Ref.: %f\n", info[0], info[1], info[2], info[3], height, info[5]);
+					printf("Latitude Actual: %f | Longitude Actual: %f | Altura Actual: %f\nLatitute Ref.: %f | Longitude Ref.: %f  | Altura Ref.: %f\n", info[0], info[1], height, info[2], info[3], info[5]);
 					printf("\n");
                     
 					// V_M
@@ -226,8 +226,8 @@ int main() {
 					V_TAS_m = controller_actuator(V_TAS_m, V_ref, time_div);
 					printf("Velocidade Sensor: %f | Distancia ao proximo waypoing sensor: %f\n", V_m, dist_btw_point_act_and_ref(info));
 					printf("Elevacao Actual Sensor: %f | Azimute Actual Sensor: %f\n", theta_path, true_heading);
-					printf("Latitude Actual Sensor: %f | Longitude Actual Sensor: %f | Altura Sensor: %f\nLatitude Ref.: %f | Longitude Ref.: %f  | Altura Ref.: %f\n", info_m[0], info_m[1], info[2], info[3], height, info[5]);
-					double erro = sqrt(pow(info_m[0] - info[0], 2.0) + pow(info_m[1] - info[1], 2.0));
+					printf("Latitude Actual Sensor: %f | Longitude Actual Sensor: %f | Altura Sensor: %f\nLatitude Ref.: %f | Longitude Ref.: %f  | Altura Ref.: %f\n", info_m[0], info_m[1], height, info[2], info[3], info[5]);
+					double erro = sqrt((pow(info_m[0] - info[0], 2.0) + pow(info_m[1] - info[1], 2.0))/2);
 
 					printf("ERRO: %f\n", erro);
 					printf("********************************************************************\n\n\n");
