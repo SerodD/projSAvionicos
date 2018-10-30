@@ -215,8 +215,8 @@ int main() {
 					info_m[1] = info_m[1] + (((velocity_N_E[1] * (time_div - ACTUATOR_DELAY)) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
 					V_TAS_m = controller_actuator(V_m, V_ref);
 					printf("V_M: %f | Distancia_proximo_waypoing_M: %f\n", V_m, dist_btw_2points(info));
-					printf("Azimute_M: %f\n", theta_path, true_heading);
-					printf("Longitude 1_M: %f | Latitude 1_M: %f\n", info[0], info[1], info[2], info[3], height, info[5]);
+					printf("Azimute_M: %f\n", true_heading);
+					printf("Longitude 1_M: %f | Latitude 1_M: %f\n", info_m[0], info_m[1]);
 					double erro = sqrt(pow(info_m[0] - info[0], 2.0) + pow(info_m[1] - info[1], 2.0));
 
 					printf("error: %f \n", erro);
