@@ -15,7 +15,7 @@
 #define RAD_TO_DEG 180/PI
 #define ALPHA 0.001
 #define KMH_TO_MS 1000/3600
-#define TIME_ACEL 70
+#define TIME_ACEL 300
 #define T 20*60
 #define ACTUATOR_DELAY 5
 
@@ -60,7 +60,7 @@ void process_points(char point_1[NB_DATA][ELE_SIZE], char point_2[NB_DATA][ELE_S
 	return;
 }
 
-double dist_btw_point_act_and_ref(double info[7]) { //função para calcular distância entre 2 pontos consecutivos
+double dist_btw_point(double info[7]) { //função para calcular distância entre 2 pontos consecutivos
 	double distance;
 	distance = acos(sin(info[0]*DEG_TO_RAD)*sin(info[2]*DEG_TO_RAD) + cos(info[0]*DEG_TO_RAD)*cos(info[2]*DEG_TO_RAD)*cos(info[1]*DEG_TO_RAD - info[3] * DEG_TO_RAD)) * (info[4] + EARTH_RADIUS); //great-circle 
 																													  // distance
@@ -69,12 +69,6 @@ double dist_btw_point_act_and_ref(double info[7]) { //função para calcular dis
 	return distance;
 }
 
-double dist_btw_2points(double info_prev[7], double info_act[7]) {
-    double distance;
-	distance = acos(sin(info_prev[0]*DEG_TO_RAD)*sin(info_act[0]*DEG_TO_RAD) + cos(info_prev[0]*DEG_TO_RAD)*cos(info_act[0]*DEG_TO_RAD)*cos(info_prev[1]*DEG_TO_RAD - info_act[1] * DEG_TO_RAD)) * (info_prev[4] + EARTH_RADIUS);
-	
-	return distance;
-}
 
 double calculate_height_dev(double present_height, double final_height) {
 	double height_dev = ALPHA * final_height - ALPHA * present_height;
@@ -186,13 +180,16 @@ int main() {
 			height = info[4];
 			V_ref = info[6];
 
-			for (k = 0; k < 7; k++) {
+			for (k = 2; k < 7; k++) {
 				info_m[k] = info[k];
 			}
-			
+
+			total_route_distance = total_route_distance + dist_btw_point(info);
+			printf("DISTANCE: %f m \n", total_route_distance);
+
 			// processar caminho (isto agora vai estar meio preso aqui, porque o tempo não está muito acelerado)
 
-			while(dist_btw_point_act_and_ref(info) > 10000) {
+			while(dist_btw_point(info) > 100000) {
 				seconds_act = time(NULL);
 				if ((double)seconds_act - (double)seconds_prev >= 1) {
 					height_dev = calculate_height_dev(height, info[5]);
@@ -210,7 +207,7 @@ int main() {
 					info[0] = info[0] + (((velocity_N_E[0] * (time_div)) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
 					info[1] = info[1] + (((velocity_N_E[1] * (time_div)) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
 					V_TAS = controller_actuator(V_TAS_m, V_ref, time_div);
-					printf("V_TAS: %f | Distancia ao proximo waypoint: %f\n", V_TAS, dist_btw_point_act_and_ref(info));
+					printf("V_TAS: %f | Distancia ao proximo waypoint: %f\n", V_TAS, dist_btw_point(info));
 					printf("Elevacao: %f | Azimute: %f\n", theta_path, true_heading);
 					printf("Latitude Actual: %f | Longitude Actual: %f | Altura Actual: %f\nLatitute Ref.: %f | Longitude Ref.: %f  | Altura Ref.: %f\n", info[0], info[1], height, info[2], info[3], info[5]);
 					printf("\n");
@@ -220,11 +217,10 @@ int main() {
 					true_heading = calculate_true_heading(info_m);
 					theta_path = calculate_theta_path(V_m * KMH_TO_MS, height_dev);
 					calculate_velocity_N_E(&velocity_N_E, V_TAS_m * KMH_TO_MS, theta_path, true_heading);
-					info_prev = info_m;
 					info_m[0] = info_m[0] + (((velocity_N_E[0] * (time_div - ACTUATOR_DELAY)) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
 					info_m[1] = info_m[1] + (((velocity_N_E[1] * (time_div - ACTUATOR_DELAY)) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
 					V_TAS_m = controller_actuator(V_TAS_m, V_ref, time_div);
-					printf("Velocidade Sensor: %f | Distancia ao proximo waypoing sensor: %f\n", V_m, dist_btw_point_act_and_ref(info));
+					printf("Velocidade Sensor: %f | Distancia ao proximo waypoing sensor: %f\n", V_m, dist_btw_point(info));
 					printf("Elevacao Actual Sensor: %f | Azimute Actual Sensor: %f\n", theta_path, true_heading);
 					printf("Latitude Actual Sensor: %f | Longitude Actual Sensor: %f | Altura Sensor: %f\nLatitude Ref.: %f | Longitude Ref.: %f  | Altura Ref.: %f\n", info_m[0], info_m[1], height, info[2], info[3], info[5]);
 					double erro = sqrt((pow(info_m[0] - info[0], 2.0) + pow(info_m[1] - info[1], 2.0))/2);
@@ -232,7 +228,6 @@ int main() {
 					printf("ERRO: %f\n", erro);
 					printf("********************************************************************\n\n\n");
 					
-					total_route_distance = total_route_distance + dist_btw_2points(info_prev, info_m);
 				}
 			}
 		}
