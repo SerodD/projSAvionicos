@@ -231,6 +231,5 @@ int main() {
 	free(info);
 
 	fclose(file);
-	
 	return 0;
 }
