@@ -200,7 +200,7 @@ int main() {
 					calculate_velocity_N_E(&velocity_N_E, V_TAS*KMH_TO_MS, theta_path, true_heading);
 					info[0] = info[0] + (((velocity_N_E[0] * (time_div-ACTUATOR_DELAY)) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
 					info[1] = info[1] + (((velocity_N_E[1] * (time_div-ACTUATOR_DELAY)) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
-					V_TAS = controller_actuator(V_TAS, V_ref, time_div);
+					V_TAS = controller_actuator(V_TAS, V_ref);
 					printf("V_TAS: %f | Distancia_proximo_waypoing: %f\n", V_TAS, dist_btw_2points(info));
 					printf("Elevacao: %f | Azimute: %f\n", theta_path, true_heading);
 					printf("Longitude 1: %f | Latitude 1: %f | Longitude 2: %f | Latitude 2: %f Altura: %f | Altura final: %f\n", info[0], info[1], info[2], info[3], height, info[5]);
@@ -213,7 +213,7 @@ int main() {
 					calculate_velocity_N_E(&velocity_N_E, V_m * KMH_TO_MS, theta_path, true_heading);
 					info_m[0] = info_m[0] + (((velocity_N_E[0] * (time_div - ACTUATOR_DELAY)) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
 					info_m[1] = info_m[1] + (((velocity_N_E[1] * (time_div - ACTUATOR_DELAY)) / (height + EARTH_RADIUS)) * RAD_TO_DEG);
-					V_TAS_m = controller_actuator(V_m, V_ref, time_div);
+					V_TAS_m = controller_actuator(V_m, V_ref);
 					printf("V_M: %f | Distancia_proximo_waypoing_M: %f\n", V_m, dist_btw_2points(info));
 					printf("Azimute_M: %f\n", theta_path, true_heading);
 					printf("Longitude 1_M: %f | Latitude 1_M: %f\n", info[0], info[1], info[2], info[3], height, info[5]);
