@@ -222,17 +222,17 @@ int main() {
 					printf("Velocidade Sensor: %f | Distancia ao proximo waypoing sensor: %f\n", V_m, dist_btw_point(info));
 					printf("Elevacao Actual Sensor: %f | Azimute Actual Sensor: %f\n", theta_path, true_heading);
 					printf("Latitude Actual Sensor: %f | Longitude Actual Sensor: %f | Altura Sensor: %f\nLatitude Ref.: %f | Longitude Ref.: %f  | Altura Ref.: %f\n", info_m[0], info_m[1], height, info[2], info[3], info[5]);
-					double erro = sqrt((pow(info_m[0] - info[0], 2.0) + pow(info_m[1] - info[1], 2.0))/2);
 
 					printf("ERRO: %f\n", erro);
 					printf("********************************************************************\n\n\n");
 					
 				}
 			}
+			double erro = erro + sqrt((pow(info_m[0] - info[2], 2.0) + pow(info_m[1] - info[3], 2.0)) / 2);
 		}
 	}
 
-	printf("DISTANCE: %f m \n", total_route_distance);
+	printf("DISTANCE: %f m Erro: %f\n", total_route_distance, erro);
 	free(info);
 
 	fclose(file);
